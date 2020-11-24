@@ -1,0 +1,397 @@
+openapi: 3.0.1
+info:
+  title: Book Management
+  description: 'サンプルのAPI定義になります'
+  version: 1.0.0
+servers:
+  - url: https://dev.api/v1
+  - url: http://localhost:8080/v1
+tags:
+  - name: 書籍
+    description: 書籍情報CRUD
+  - name: ユーザー
+    description: このシステムを利用するユーザー情報CRUD
+  - name: その他
+paths:
+  /books:
+    put:
+      tags:
+        - 書籍
+      summary: 書籍更新API
+      requestBody:
+        description: 書籍情報を更新します
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: 無効なIDです
+          content: {}
+        404:
+          description: 更新対象の書籍が見つかりません
+          content: {}
+        405:
+          description: リクエストパラメータに誤りがあります
+          content: {}
+
+    post:
+      tags:
+        - 書籍
+      summary: 書籍登録API
+      requestBody:
+        description: 新しい書籍を登録する
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+        required: true
+      responses:
+        200:
+          description: OK
+        405:
+          description: リクエストパラメータに誤りがあります
+          content: {}
+
+
+    get:
+      tags:
+        - 書籍
+      summary: 書籍一覧取得API
+      description: 参照可能な書籍リストを取得します
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        400:
+          description: 無効なAPI KEYです
+          content: {}
+      security:
+        - api_key: []
+
+  /books/findByTags:
+    get:
+      tags:
+        - 書籍
+      summary: タグ絞り込み検索API
+      description: 指定した複数タグのいずれかを含む書籍リストを取得します
+      parameters:
+        - name: tags
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        400:
+          description: 無効なタグがあります
+          content: {}
+      deprecated: true
+
+  /books/{bookId}:
+    get:
+      tags:
+        - 書籍
+      summary: 書籍詳細取得API
+      description: IDに紐づく書籍を取得します
+      parameters:
+        - name: bookId
+          in: path
+          description: 書籍ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        400:
+          description: 無効なIDです
+          content: {}
+        404:
+          description: 書籍が見つかりませんでした
+          content: {}
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - 書籍
+      summary: 書籍削除API
+      parameters:
+        - name: api_key
+          in: header
+          schema:
+            type: string
+        - name: bookId
+          in: path
+          description: 書籍ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: OK
+        400:
+          description: 無効なAPI KEYです
+          content: {}
+        404:
+          description: 書籍が見つかりませんでした
+          content: {}
+
+  /users:
+    post:
+      tags:
+        - ユーザー
+      summary: ユーザー登録API
+      description: 書籍管理するユーザーを登録します
+      requestBody:
+        description: ユーザー情報
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        default:
+          description: OK
+          content: {}
+    get:
+      tags:
+        - ユーザー
+      summary: ユーザー一覧取得API
+      description: ログイン可能なユーザーリストを取得します
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: 無効なユーザー名です
+          content: {}
+        404:
+          description: ユーザーが見つかりませんでした
+          content: {}
+
+  /users/login:
+    get:
+      tags:
+        - ユーザー
+      summary: ログインAPI
+      parameters:
+        - name: username
+          in: query
+          description: ユーザー名
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: パスワード
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: ユーザー名/パスワードに誤りがあります
+          content: {}
+  /users/logout:
+    get:
+      tags:
+        - ユーザー
+      summary: ログアウトAPI
+      responses:
+        default:
+          description: OK
+          content: {}
+
+  /users/{username}:
+    get:
+      tags:
+        - ユーザー
+      summary: ユーザー詳細取得APi
+      parameters:
+        - name: username
+          in: path
+          description: ユーザー名
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: 無効なユーザー名です
+          content: {}
+        404:
+          description: ユーザーが見つかりませんでした
+          content: {}
+    put:
+      tags:
+        - ユーザー
+      summary: ユーザー更新API
+      description: ユーザー情報を更新します
+      parameters:
+        - name: username
+          in: path
+          description: ユーザー名
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        200:
+          description: OK
+        400:
+          description: リクエストパラメータに誤りがあります
+          content: {}
+        404:
+          description: ユーザーが見つかりませんでした
+          content: {}
+    delete:
+      tags:
+        - ユーザー
+      summary: ユーザー削除API
+      description: 指定したユーザーを削除します
+      parameters:
+        - name: username
+          in: path
+          description: ユーザー名
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+        400:
+          description: 無効なユーザー名です
+          content: {}
+        404:
+          description: ユーザーが見つかりませんでした
+          content: {}
+
+  /tags:
+    get:
+      tags:
+        - その他
+      summary: タグ一覧取得API
+      description: タグリストを取得します
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        400:
+          description: 無効なAPI KEYです
+          content: {}
+      security:
+        - api_key: []
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ユーザーID
+        username:
+          type: string
+          description: ユーザー名
+        firstName:
+          type: string
+          description: 名
+        lastName:
+          type: string
+          description: 姓
+        email:
+          type: string
+          description: メールアドレス
+        password:
+          type: string
+          description: パスワード
+      required:
+        - username
+        - firstName
+        - lastName
+        - email
+        - password
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: タグID
+        name:
+          type: string
+          description: タグ名
+    Book:
+      required:
+        - title
+        - author
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 書籍ID
+        title:
+          type: string
+          example: 'OpenAPI Convert Postman Collection'
+          description: タイトル
+        author:
+          type: string
+          example: John
+          description: 著者
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
